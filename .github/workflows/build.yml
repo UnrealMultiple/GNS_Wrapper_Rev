@@ -1,0 +1,83 @@
+name: Build
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  windows-x64:
+    name: Windows x64
+    runs-on: windows-latest
+    timeout-minutes: 120
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 1
+          # Only the top-level submodules (GNS, protobuf, OpenSSL) are needed.
+          # A recursive checkout would also pull WebRTC/abseil, which are unused.
+          submodules: true
+
+      - name: Set up MSVC x64 environment
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
+      - name: Configure
+        run: >-
+          cmake -S . -B build -G Ninja
+          -DCMAKE_BUILD_TYPE=Release
+          -DGNS_WRAPPER_BUILD_GNS=ON
+          -DGNS_WRAPPER_LINK_STATIC=ON
+
+      - name: Build
+        run: cmake --build build
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: GNS_Wrapper-windows-x64
+          path: |
+            build/GNS_Wrapper.dll
+            build/GNS_Wrapper.lib
+          if-no-files-found: error
+
+  linux-x64:
+    name: Linux x64
+    runs-on: ubuntu-26.04
+    timeout-minutes: 120
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 1
+          submodules: true
+
+      - name: Install build tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            build-essential cmake perl
+
+      - name: Configure
+        run: >-
+          cmake -S . -B build
+          -DCMAKE_BUILD_TYPE=Release
+          -DGNS_WRAPPER_BUILD_GNS=ON
+          -DGNS_WRAPPER_LINK_STATIC=ON
+
+      - name: Build
+        run: cmake --build build --parallel "$(nproc)"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: GNS_Wrapper-linux-x64
+          path: build/libGNS_Wrapper.so
+          if-no-files-found: error
