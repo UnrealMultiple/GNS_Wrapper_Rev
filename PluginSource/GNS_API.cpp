@@ -1,9 +1,3 @@
-//====== Copyright Valve Corporation, All rights reserved. ====================
-//
-// Purpose: C ABI wrapper around GameNetworkingSockets, for managed code.
-//
-//=============================================================================
-
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
