@@ -5,7 +5,7 @@
 ```sh
 git clone --depth 1 https://github.com/UnrealMultiple/GNS_Wrapper_Rev.git
 cd GNS_Wrapper_Rev
-git submodule update --init
+git submodule update --init --depth 1
 ```
 
 ## Linux
