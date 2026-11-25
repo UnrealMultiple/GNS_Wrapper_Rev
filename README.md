@@ -23,3 +23,7 @@ Run from an x64 Visual Studio developer prompt (CMake 3.16+, Ninja):
 cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
 cmake --build build
 ```
+
+## Prebuilt binaries
+
+Checkout [GitHub Actions](https://github.com/UnrealMultiple/GNS_Wrapper_Rev/actions)
