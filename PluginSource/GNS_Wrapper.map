@@ -1,0 +1,7 @@
+{
+    global:
+        GNS_*;
+        main;
+    local:
+        *;
+};
