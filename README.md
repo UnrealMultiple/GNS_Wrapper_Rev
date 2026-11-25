@@ -1,5 +1,13 @@
 # GNS_Wrapper
 
+## Getting the sources
+
+```sh
+git clone --depth 1 https://github.com/UnrealMultiple/GNS_Wrapper_Rev.git
+cd GNS_Wrapper_Rev
+git submodule update --init
+```
+
 ## Linux
 
 ```sh
