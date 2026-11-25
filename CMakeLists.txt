@@ -5,8 +5,8 @@ project( GNS_Wrapper LANGUAGES C CXX )
 # GameNetworkingSockets source / headers
 # ---------------------------------------------------------------------------
 
-set( GNS_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/reference/gamenetworkingsockets"
-     CACHE PATH "GameNetworkingSockets checkout" )
+set( GNS_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/GameNetworkingSockets"
+     CACHE PATH "GameNetworkingSockets submodule checkout" )
 
 option( GNS_WRAPPER_BUILD_GNS
         "Build GameNetworkingSockets from GNS_ROOT instead of using a prebuilt library"
@@ -23,11 +23,25 @@ option( GNS_WRAPPER_ORIGINAL_FLAGS
         "Reproduce the observed GCC 8.3 flags (-O3 -g1, non-strict aliasing, etc.)"
         OFF )
 
+option( GNS_WRAPPER_BUNDLED_DEPS
+        "Build protobuf and OpenSSL from the pinned third_party/ submodules"
+        ON )
+
 # ---------------------------------------------------------------------------
 # Build or find GNS
 # ---------------------------------------------------------------------------
 
 if( GNS_WRAPPER_BUILD_GNS )
+    if( GNS_WRAPPER_BUNDLED_DEPS )
+        if( WIN32 )
+            message( STATUS
+                "GNS_WRAPPER_BUNDLED_DEPS is not supported on Windows; "
+                "using system protobuf/OpenSSL" )
+        else()
+            include( cmake/BundledDeps.cmake )
+        endif()
+    endif()
+
     if( GNS_WRAPPER_LINK_STATIC )
         set( BUILD_STATIC_LIB ON  CACHE BOOL "" FORCE )
         set( BUILD_SHARED_LIB OFF CACHE BOOL "" FORCE )
