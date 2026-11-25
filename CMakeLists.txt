@@ -24,8 +24,18 @@ option( GNS_WRAPPER_ORIGINAL_FLAGS
         OFF )
 
 option( GNS_WRAPPER_BUNDLED_DEPS
-        "Build protobuf and OpenSSL from the pinned third_party/ submodules"
+        "Build protobuf (and OpenSSL when selected) from the pinned third_party/ submodules"
         ON )
+
+# Windows static builds use the OS BCrypt primitives, so no OpenSSL is needed.
+# BCrypt also requires no imported DLL: the whole wrapper links statically.
+if( WIN32 )
+    set( _gns_default_crypto BCrypt )
+else()
+    set( _gns_default_crypto OpenSSL )
+endif()
+set( GNS_WRAPPER_CRYPTO "${_gns_default_crypto}" CACHE STRING
+     "GNS crypto backend (BCrypt on Windows, OpenSSL elsewhere)" )
 
 # ---------------------------------------------------------------------------
 # Build or find GNS
@@ -33,13 +43,19 @@ option( GNS_WRAPPER_BUNDLED_DEPS
 
 if( GNS_WRAPPER_BUILD_GNS )
     if( GNS_WRAPPER_BUNDLED_DEPS )
-        if( WIN32 )
-            message( STATUS
-                "GNS_WRAPPER_BUNDLED_DEPS is not supported on Windows; "
-                "using system protobuf/OpenSSL" )
-        else()
-            include( cmake/BundledDeps.cmake )
-        endif()
+        include( cmake/BundledDeps.cmake )
+    endif()
+
+    set( USE_CRYPTO "${GNS_WRAPPER_CRYPTO}" CACHE STRING "" FORCE )
+
+    if( MSVC )
+        # GNS and protobuf must use the same CRT as the wrapper (which is
+        # already forced to MultiThreaded below).  CMAKE_MSVC_RUNTIME_LIBRARY
+        # is what actually applies the flag under CMP0091; GNS' legacy
+        # /MD -> /MT replacement no longer sees /MD in the default flags.
+        set( MSVC_CRT_STATIC ON CACHE BOOL "" FORCE )
+        set( CMAKE_MSVC_RUNTIME_LIBRARY
+             "MultiThreaded$<$<CONFIG:Debug>:Debug>" CACHE STRING "" FORCE )
     endif()
 
     if( GNS_WRAPPER_LINK_STATIC )
